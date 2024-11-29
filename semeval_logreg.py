@@ -1,10 +1,11 @@
 import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import classification_report, accuracy_score
 import numpy as np
-import json
 
 # Load the CSV files
 posts_df = pd.read_csv('C:/Users/kiara/OneDrive/Documents/NLP/243/Final Project/posts.csv')
@@ -35,74 +36,77 @@ data = pd.concat([data, negative_data]).reset_index(drop=True)
 # Normalize text columns
 data['ocr'] = data['ocr'].str.lower().str.strip()
 data['claim'] = data['claim'].str.lower().str.strip()
-data['features'] = data['features'].str.lower().str.strip()
 
-# Vectorize the 'ocr' and 'claim' columns using TF-IDF
-tfidf_vectorizer = TfidfVectorizer(max_features=5000)  # Limit to top 5000 terms
+# Feature Engineering
+
+# TF-IDF Vectorization
+tfidf_vectorizer = TfidfVectorizer(max_features=5000, stop_words='english')
 ocr_tfidf = tfidf_vectorizer.fit_transform(data['ocr'])
 claim_tfidf = tfidf_vectorizer.transform(data['claim'])
 
-# Compute cosine similarity between 'ocr' and 'claim'
+# Cosine Similarity
 data['cosine_similarity'] = [
     cosine_similarity(ocr_tfidf[i], claim_tfidf[i])[0][0] for i in range(len(data))
 ]
 
-# Prepare features and labels
-X = data[['cosine_similarity']].values  # Use cosine similarity as the only feature
-y = data['label'].values  # Labels: 1 (relevant), 0 (not relevant)
+# Length-Based Features
+data['ocr_length'] = data['ocr'].str.len()
+data['claim_length'] = data['claim'].str.len()
+data['length_diff'] = abs(data['ocr_length'] - data['claim_length'])
 
-# Split into train and test sets
+# N-Gram Overlap
+count_vectorizer = CountVectorizer(ngram_range=(1, 2), stop_words='english')
+ocr_ngrams = count_vectorizer.fit_transform(data['ocr'])
+claim_ngrams = count_vectorizer.transform(data['claim'])
+
+data['ngram_overlap'] = [
+    len(set(ocr_ngrams[i].indices) & set(claim_ngrams[i].indices)) for i in range(len(data))
+]
+
+# Jaccard Similarity
+def jaccard_similarity(str1, str2):
+    set1, set2 = set(str1.split()), set(str2.split())
+    intersection = len(set1 & set2)
+    union = len(set1 | set2)
+    return intersection / union if union > 0 else 0
+
+data['jaccard_similarity'] = data.apply(lambda x: jaccard_similarity(x['ocr'], x['claim']), axis=1)
+
+# Prepare Features and Labels
+X = data[['cosine_similarity', 'length_diff', 'ngram_overlap', 'jaccard_similarity']].values
+y = data['label'].values
+
+# Scale features for better convergence
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+# Train-Test Split
 X_train, X_test, y_train, y_test, train_ids, test_ids = train_test_split(
     X, y, data[['post_id', 'fact_check_id']], test_size=0.2, random_state=42
 )
 
-# Train logistic regression model
-log_reg = LogisticRegression()
+# Logistic Regression with increased iterations
+log_reg = LogisticRegression(max_iter=200)
 log_reg.fit(X_train, y_train)
 
-# Predict probabilities on the test set
-y_test_pred_probs = log_reg.predict_proba(X_test)[:, 1]  # Probability of class 1 (relevant)
+# Predictions
+y_test_pred_probs = log_reg.predict_proba(X_test)[:, 1]
+y_test_pred = (y_test_pred_probs > 0.5).astype(int)
 
-# Add predictions to test set
+# Evaluate Model
+print("Classification Report:")
+print(classification_report(y_test, y_test_pred))
+print(f"Accuracy: {accuracy_score(y_test, y_test_pred):.4f}")
+
+# Save Relevant Fact Check Predictions
 test_results = test_ids.copy()
-test_results['predicted_label'] = (y_test_pred_probs > 0.5).astype(int)  # Threshold at 0.5
-test_results['probability'] = y_test_pred_probs
-
-# Filter relevant fact_check_id predictions (label == 1) for each post_id
+test_results['predicted_label'] = y_test_pred
 relevant_fact_checks = (
     test_results[test_results['predicted_label'] == 1]
     .groupby('post_id')['fact_check_id']
     .apply(list)
     .reset_index()
 )
+relevant_fact_checks.to_csv('C:/Users/kiara/OneDrive/Documents/NLP/243/Final Project/monolingual_predictions.csv', index=False)
 
-# Convert to dictionary for JSON output
-relevant_fact_checks_dict = relevant_fact_checks.set_index('post_id')['fact_check_id'].to_dict()
-
-# Save the predictions as monolingual_predictions.json
-with open('C:/Users/kiara/OneDrive/Documents/NLP/243/Final Project/monolingual_predictions.json', 'w') as f:
-    json.dump(relevant_fact_checks_dict, f)
-
-print("Relevant fact_check_ids for each post_id have been saved to 'monolingual_predictions.json'.")
-
-# Load ground truth from pairs_df
-ground_truth = pairs_df.groupby('post_id')['fact_check_id'].apply(list).to_dict()
-
-# Define a function to calculate Top-k Accuracy
-def calculate_top_k_accuracy(ground_truth_dict, predictions_dict, k=5):
-    total_posts = len(ground_truth_dict)
-    correct_predictions = 0
-
-    for post_id, true_fact_checks in ground_truth_dict.items():
-        predicted_fact_checks = predictions_dict.get(post_id, [])[:k]  # Get top-k predictions
-        if set(predicted_fact_checks) & set(true_fact_checks):  # Check for overlap
-            correct_predictions += 1
-
-    top_k_accuracy = correct_predictions / total_posts
-    return top_k_accuracy
-
-# Calculate Top-k Accuracy
-k = 5
-top_k_accuracy = calculate_top_k_accuracy(ground_truth, relevant_fact_checks_dict, k=k)
-
-print(f"Top-{k} Accuracy: {top_k_accuracy:.4f}")
+print("Predictions saved to monolingual_predictions.csv.")
