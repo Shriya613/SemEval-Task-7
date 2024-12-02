@@ -1,0 +1,75 @@
+Epoch 1/30:
+Train Loss: 0.693800620853171
+Validation Loss: 0.6931537894173438
+Validation Accuracy: 0.49067599067599066
+Validation MRR: 0.5306525573192239
+Validation Precision@10: 0.6000000238418579
+----------------------------------------
+Epoch 2/30:
+Train Loss: 0.6935439899228779
+Validation Loss: 0.6936009681743124
+Validation Accuracy: 0.49067599067599066
+Validation MRR: 0.5304409171075838
+Validation Precision@10: 0.4000000059604645
+----------------------------------------
+Epoch 3/30:
+Train Loss: 0.6935051529700785
+Validation Loss: 0.6942432312676625
+Validation Accuracy: 0.49067599067599066
+Validation MRR: 0.5301940035273369
+Validation Precision@10: 0.699999988079071
+----------------------------------------
+Epoch 4/30:
+Train Loss: 0.693415797774305
+Validation Loss: 0.693253547971293
+Validation Accuracy: 0.49067599067599066
+Validation MRR: 0.5303350970017637
+Validation Precision@10: 0.5
+----------------------------------------
+Epoch 5/30:
+Train Loss: 0.6933077019456317
+Validation Loss: 0.6929749783521854
+Validation Accuracy: 0.5093240093240093
+Validation MRR: 0.5303350970017637
+Validation Precision@10: 0.5
+----------------------------------------
+Epoch 6/30:
+Train Loss: 0.6932499633478608
+Validation Loss: 0.6946820022526735
+Validation Accuracy: 0.49067599067599066
+Validation MRR: 0.5303350970017637
+Validation Precision@10: 0.5
+----------------------------------------
+Epoch 7/30:
+Train Loss: 0.6933437344296238
+Validation Loss: 0.6930035585016938
+Validation Accuracy: 0.5093240093240093
+Validation MRR: 0.5303350970017637
+Validation Precision@10: 0.5
+----------------------------------------
+Epoch 8/30:
+Train Loss: 0.6931835930475128
+Validation Loss: 0.6943505300868372
+Validation Accuracy: 0.49067599067599066
+Validation MRR: 0.5302292768959436
+Validation Precision@10: 0.6000000238418579
+----------------------------------------
+Epoch 9/30:
+Train Loss: 0.6933173249199717
+Validation Loss: 0.69369184295213
+Validation Accuracy: 0.49067599067599066
+Validation MRR: 0.5300176366843034
+Validation Precision@10: 0.5
+----------------------------------------
+Epoch 10/30:
+Train Loss: 0.6932832403998775
+Validation Loss: 0.693110855284685
+Validation Accuracy: 0.5093240093240093
+Validation MRR: 0.5303350970017637
+Validation Precision@10: 0.5
+----------------------------------------
+Test Loss: 0.6931419996371181
+Test Accuracy: 0.501747572815534
+Test MRR: 0.507665174331841
+Test Precision@10: 0.6000000238418579
+----------------------------------------
