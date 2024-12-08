@@ -44,6 +44,12 @@ The output of the script includes:
 
 ___________________________________
 
+## Set-up for Bi-LSTM models
+
+* Ensure that the necessary datasets are present in one directory. Install all required Python libraries.
+* Once the code is run, the output will be saved in a .csv file containing the classification report, accuracy and other values.
+
+___________________________________
 ## Set-up for roBERTa Models (v4, v5):
 
 * The code expects the dataset in the same directory and requires the installation of a few Python libraries.
