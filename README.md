@@ -41,3 +41,10 @@ The output of the script includes:
 * Best hyperparameters and cross-validation accuracy
 * Classification metrics (precision, recall, and F1-score)
 * Overall accuracy and Top-K accuracy for the test set
+
+___________________________________
+
+## Set-up for roBERTa Models (v4, v5):
+
+* The code expects the dataset in the same directory and requires the installation of a few Python libraries.
+* Once the code runs, the expected output is a predictions.csv for both of them, where the models and text files containing the loss, accuracy, and other values will be saved.
